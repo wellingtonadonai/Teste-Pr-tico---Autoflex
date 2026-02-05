@@ -1,10 +1,11 @@
 package com.autoflex.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
     @Entity
-    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Table(name = "raw_materials")
     public class RawMaterial {
 
@@ -18,4 +19,28 @@ import lombok.Data;
         @Column(nullable = false)
         private Integer stockQuantity; // Quantidade em estoque
 
-}
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Integer getStockQuantity() {
+            return stockQuantity;
+        }
+
+        public void setStockQuantity(Integer stockQuantity) {
+            this.stockQuantity = stockQuantity;
+        }
+    }

@@ -25,17 +25,16 @@ public class InventoryController {
     @Autowired
     private RawMaterialRepository rawMaterialRepository;
 
-    // --- RF004: Consulta de sugestão de produção ---
+
     @GetMapping("/production-plan")
     public ResponseEntity<List<ProductionPlanDTO>> getProductionPlan() {
         return ResponseEntity.ok(productionService.calculateProduction());
     }
 
-    // --- RF001: CRUD Produtos (Exemplo Simplificado) ---
+
     @PostMapping("/products")
     public Product createProduct(@RequestBody Product product) {
-        // Nota: Ao salvar, o JSON deve incluir a lista de 'compositions'
-        // para atender o RF003 (associação) no mesmo payload ou separado.
+
         return productRepository.save(product);
     }
 
@@ -44,7 +43,7 @@ public class InventoryController {
         return productRepository.findAll();
     }
 
-    // --- RF002: CRUD Matérias Primas ---
+
     @PostMapping("/raw-materials")
     public RawMaterial createRawMaterial(@RequestBody RawMaterial material) {
         return rawMaterialRepository.save(material);

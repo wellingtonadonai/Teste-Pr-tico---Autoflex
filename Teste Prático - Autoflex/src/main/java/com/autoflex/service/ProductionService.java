@@ -34,6 +34,7 @@ public class ProductionService {
 
         // 3. Cria um mapa de estoque temporário para simular o consumo
         // Map<ID da Matéria, Quantidade Disponível>
+
         Map<Long, Integer> tempStock = new HashMap<>();
         for (RawMaterial rm : materials) {
             tempStock.put(rm.getId(), rm.getStockQuantity());
@@ -66,8 +67,7 @@ public class ProductionService {
                     Long rawMaterialId = comp.getRawMaterial().getId();
                     Integer quantityNeeded = comp.getQuantityRequired() * maxProducible;
 
-                    int currentStock = tempStock.get(rawMaterialId);
-                    tempStock.put(rawMaterialId, currentStock - quantityNeeded);
+                    tempStock.compute(rawMaterialId, (k, currentStock) -> currentStock - quantityNeeded);
                 }
 
 
