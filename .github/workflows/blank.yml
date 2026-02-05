@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout do código
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2. Configura Java 21
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      # 3. Confere versão do Java (garantia)
+      - name: Verificar versão do Java
+        run: java -version
+
+      # 4. Build do projeto
+      - name: Build com Maven
+        run: mvn clean verify
