@@ -1,12 +1,8 @@
 package com.autoflex;
 
-
 import com.autoflex.dto.ProductionPlanDTO;
-import com.autoflex.entity.Product;
-import com.autoflex.entity.ProductComposition;
-import com.autoflex.entity.RawMaterial;
-import com.autoflex.repository.ProductRepository;
-import com.autoflex.repository.RawMaterialRepository;
+import com.autoflex.entity.*;
+import com.autoflex.repository.*;
 import com.autoflex.service.ProductionService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,54 +29,73 @@ public class ProductionServiceTest {
     private RawMaterialRepository rawMaterialRepository;
 
     @Test
-    public void shouldCalculateProductionCorrectly() {
-        // 1. CENÁRIO (ARRANGE)
-        // Criando uma matéria-prima: Madeira
+    public void shouldCalculateProductionAndValuesCorrectly() {
+        // 1. CENÁRIO: Temos 100 de Madeira e a Mesa custa $200 e pede 10 Madeiras
         RawMaterial wood = new RawMaterial();
         wood.setId(1L);
         wood.setName("Wood");
-        wood.setStockQuantity(100); // Temos 100 unidades em estoque
+        wood.setStockQuantity(100);
 
-        // Lista de matérias-primas do banco
-        List<RawMaterial> stockList = new ArrayList<>();
-        stockList.add(wood);
-
-        // Criando um produto: Mesa
         Product table = new Product();
         table.setId(1L);
         table.setName("Table");
         table.setValue(new BigDecimal("200.00"));
 
-        // Definindo a receita: Mesa precisa de 10 Madeiras
         ProductComposition composition = new ProductComposition();
-        composition.setProduct(table);
         composition.setRawMaterial(wood);
-        composition.setQuantityRequired(10); // Gasta 10 por unidade
+        composition.setQuantityRequired(10);
 
-        List<ProductComposition> compositions = new ArrayList<>();
-        compositions.add(composition);
-        table.setCompositions(compositions);
+        table.setCompositions(List.of(composition));
 
-        // Lista de produtos do banco
-        List<Product> productList = new ArrayList<>();
-        productList.add(table);
+        Mockito.when(productRepository.findAllOrderByValueDesc()).thenReturn(List.of(table));
+        Mockito.when(rawMaterialRepository.findAll()).thenReturn(List.of(wood));
 
-        // Ensinando o Mockito a retornar nossas listas falsas
-        Mockito.when(productRepository.findAllOrderByValueDesc()).thenReturn(productList);
-        Mockito.when(rawMaterialRepository.findAll()).thenReturn(stockList);
-
-        // 2. AÇÃO (ACT)
-        // Chamamos o método que queremos testar
+        // 2. AÇÃO
         List<ProductionPlanDTO> result = productionService.calculateProduction();
 
-        // 3. VERIFICAÇÃO (ASSERT)
-        // Se temos 100 madeiras e a mesa gasta 10, devemos conseguir produzir 10 mesas.
-
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(1, result.size()); // Deve sugerir 1 tipo de produto
-
+        // 3. VERIFICAÇÃO
+        Assertions.assertFalse(result.isEmpty(), "O plano não deveria estar vazio");
         ProductionPlanDTO dto = result.get(0);
-        Assertions.assertEquals("Table", dto.getProductName());
-        Assertions.assertEquals(10, dto.getQuantityToProduce()); // 100 / 10 = 10
+
+        // Valida se a quantidade está certa (100 / 10 = 10)
+        Assertions.assertEquals(10, dto.getQuantityToProduce());
+
+        // Valida se o preço unitário passou correto ($200.00)
+        Assertions.assertEquals(new BigDecimal("200.00"), dto.getUnitPrice());
+
+        // Valida o Valor Total (10 unidades * $200 = $2000)
+        // Usamos compareTo para BigDecimal porque é mais seguro que equals
+        Assertions.assertEquals(0, new BigDecimal("2000.00").compareTo(dto.getTotalValue()));
+
+        // Garante que não há erro de estoque neste cenário
+        Assertions.assertNull(dto.getWarningMessage());
+    }
+
+    @Test
+    public void shouldShowWarningWhenStockIsZero() {
+        // CENÁRIO: Estoque zerado de madeira
+        RawMaterial wood = new RawMaterial();
+        wood.setName("Wood");
+        wood.setStockQuantity(0);
+
+        Product table = new Product();
+        table.setName("Table");
+        table.setValue(new BigDecimal("200.00"));
+
+        ProductComposition comp = new ProductComposition();
+        comp.setRawMaterial(wood);
+        comp.setQuantityRequired(10);
+        table.setCompositions(List.of(comp));
+
+        Mockito.when(productRepository.findAllOrderByValueDesc()).thenReturn(List.of(table));
+        Mockito.when(rawMaterialRepository.findAll()).thenReturn(List.of(wood));
+
+        // AÇÃO
+        List<ProductionPlanDTO> result = productionService.calculateProduction();
+
+        // VERIFICAÇÃO: Deve aparecer o aviso que implementamos no Service
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertNotNull(result.get(0).getWarningMessage());
+        Assertions.assertTrue(result.get(0).getWarningMessage().contains("Wood"));
     }
 }
