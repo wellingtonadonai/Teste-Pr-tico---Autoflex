@@ -58,16 +58,4 @@ Eu implementei testes unitários para garantir que o cálculo do plano de produ�
 
 Bash
 ./mvnw test
-Desenvolvido como parte do processo seletivo para Desenvolvedor na Autoflex - 2026.
-
-
----
-
-### Dicas para o GitHub:
-1.  **Imagens:** Se você tirou prints da tela funcionando (como a tabela com o alerta de falta de material), você pode criar uma pasta chamada `img` no seu repositório, subir as fotos lá e linkar no README usando `![Descrição](img/sua-foto.png)`.
-2.  **Sinceridade:** Esse README mostra que você entende o que é um **Monolito** e que sabe usar ferramentas de teste como **Mockito**.
-
-**Gostaria que eu revisasse mais algum ponto antes de você finalizar o envio do test
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
-spring.jpa.hibernate.ddl-auto=update
+Desenvolvido como parte do processo seletivo para Desenvolvedor na Autoflex - 2026
